@@ -2,6 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs/promises');
+const crypto = require('crypto');
 // const { restart } = require('nodemon');
 // const { response } = require('express');
 
@@ -19,11 +20,15 @@ const getTalkers = async () => {
   return talkersJson;
 };
 
+// função que gera um token
+const generateToken = () => crypto.randomBytes(8).toString('hex');
+
 // não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
   response.status(HTTP_OK_STATUS).send();
 });
 
+// rota que busca todos os talkers
 app.get('/talker', async (_req, res) => {
   const loadTalkers = await getTalkers(); // executa a função getTalkers de forma assincrona
   return loadTalkers.length !== 0 
@@ -31,6 +36,7 @@ app.get('/talker', async (_req, res) => {
   : res.status(200).json(emptyArray); // Caso não tenha nada no arquivo retorna array vazio
 });
 
+// rota que busca um talker específico por id
 app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
   const loadTalkers = await getTalkers(); // executa a função getTalkers de forma assincrona
@@ -38,6 +44,14 @@ app.get('/talker/:id', async (req, res) => {
   return !talkerFind 
   ? res.status(404).json({ message: 'Pessoa palestrante não encontrada' }) // caso não encontre o talker mostra mensagem
   : res.status(200).json(talkerFind); // caso encontro o talker, mostre as infos dele
+});
+
+// rota que retorna um token e envia email e password no body
+app.post('/login', async (_req, res) => {
+  // const { email, password } = req.body;
+  const tokenString = generateToken();
+  const token = { token: tokenString };
+  return res.status(200).json(token);
 });
 
 app.listen(PORT, () => {
