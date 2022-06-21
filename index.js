@@ -7,11 +7,56 @@ const crypto = require('crypto');
 // const { response } = require('express');
 
 const app = express();
+
 app.use(bodyParser.json());
+
+app.use((req, _res, next) => {
+  console.log('req.method:', req.method);
+  console.log('req.path:', req.path);
+  console.log('req.params:', req.params);
+  console.log('req.query:', req.query);
+  console.log('req.headers:', req.headers);
+  console.log('req.body:', req.body);
+  next();
+});
 
 const HTTP_OK_STATUS = 200;
 const PORT = '3000';
 const emptyArray = [];
+
+// função que faz a validação do email
+const validateEmail = (req, res, next) => {
+  const { email } = req.body;
+  // valida se o email foi passado 
+  if (!email || email.length === 0) {
+    res.status(400).json({ message: 'O campo "email" é obrigatório' });
+  }
+
+  // valida se foi passado um email válido
+  const regex = /\S+@\S+\.\S+/;
+  const testEmail = regex.test(email);
+  if (!testEmail) {
+    res.status(400).json({ message: 'O "email" deve ter o formato "email@email.com"' });
+  }
+
+  next();
+};
+
+// função que faz a validação do password
+const validatePassword = (req, res, next) => {
+  const { password } = req.body;
+  // valida se o password foi passado
+  if (!password || password.length === 0) {
+    res.status(400).json({ message: 'O campo "password" é obrigatório' });
+  }
+
+  // valida se o password tem pelo menos 6 caracteres
+  if (password.length <= 6) {
+    res.status(400).json({ message: 'O "password" deve ter pelo menos 6 caracteres' });
+  }
+
+  next();
+};
 
 // função que faz a leitura do arquivo de talkers
 const getTalkers = async () => {
@@ -46,11 +91,11 @@ app.get('/talker/:id', async (req, res) => {
   : res.status(200).json(talkerFind); // caso encontro o talker, mostre as infos dele
 });
 
-// rota que retorna um token e envia email e password no body
-app.post('/login', async (_req, res) => {
+// rota que retorna um token e faz as validações de login
+app.post('/login', validateEmail, validatePassword, (_req, res) => {
   // const { email, password } = req.body;
-  const tokenString = generateToken();
-  const token = { token: tokenString };
+  const tokenString = generateToken(); // gera token aleatorio
+  const token = { token: tokenString }; // adiciona o o valor do token na chave token 
   return res.status(200).json(token);
 });
 
