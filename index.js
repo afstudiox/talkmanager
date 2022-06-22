@@ -10,6 +10,12 @@ const getTalkers = require('./middlewares/getTalkers');
 const writeTalkers = require('./middlewares/writeTalkers');
 const showTalkers = require('./middlewares/showTalkers');
 const findTalker = require('./middlewares/findTalker');
+const validateToken = require('./middlewares/validateToken');
+const validateName = require('./middlewares/validateName');
+const validateAge = require('./middlewares/validateAge');
+const validateTalk = require('./middlewares/validateTalk');
+const validateWatched = require('./middlewares/validateWatched');
+const validateRate = require('./middlewares/validateRate');
 
 const app = express();
 
@@ -43,7 +49,14 @@ app.get('/talker/:id', findTalker);
 app.post('/login', validateEmail, validatePassword, generateToken);
 
 // POST TALKER
-app.post('/talker', async (req, res) => {
+app.post('/talker', 
+  validateToken, 
+  validateName, 
+  validateAge, 
+  validateTalk, 
+  validateWatched,
+  validateRate, 
+  async (req, res) => {
   const { name, age, talk } = req.body;
   const talkers = await getTalkers();
   const id = Number(talkers[talkers.length - 1].id) + 1;
