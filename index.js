@@ -18,6 +18,7 @@ const validateWatched = require('./middlewares/validateWatched');
 const validateRate = require('./middlewares/validateRate');
 const updateTalker = require('./middlewares/updateTalker');
 const deleteTalker = require('./middlewares/deleteTalker');
+const searchTalker = require('./middlewares/searchTalker');
 
 const app = express();
 
@@ -40,6 +41,9 @@ const PORT = '3000';
 app.get('/', (_request, response) => {
   response.status(HTTP_OK_STATUS).send();
 });
+
+// rota que busca os talkers pelo nome usando query
+app.get('/talker/search', validateToken, searchTalker);
 
 // rota que busca todos os talkers
 app.get('/talker', showTalkers);
@@ -78,6 +82,4 @@ app.put('/talker/:id',
 
 app.delete('/talker/:id', validateToken, deleteTalker);
 
-app.listen(PORT, () => {
-  console.log('Online');
-});
+app.listen(PORT, () => console.log('Online'));
